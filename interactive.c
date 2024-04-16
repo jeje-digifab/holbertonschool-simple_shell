@@ -1,7 +1,5 @@
 #include "main.h"
 
-#define MAX_LINE_LENGTH 80
-
 /**
  * read_input - reads a line of input from stdin and stores it in a buffer
  * @input: a double pointer to a buffer to store the input
