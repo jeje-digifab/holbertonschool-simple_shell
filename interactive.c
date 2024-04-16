@@ -1,14 +1,14 @@
 #include "main.h"
 
-
-
 #define MAX_LINE_LENGTH 80
 
 /**
- * #define MAX_LINE_LENGTH 80
- * #define MAX_ARGS 1
+ * read_input - reads a line of input from stdin and stores it in a buffer
+ * @input: a double pointer to a buffer to store the input
+ * @len: a pointer to a size_t variable containing the size of the buffer
+ *
+ * Return: a pointer to the buffer containing the input
  */
-
 
 char *read_input(char **input, size_t *len)
 {
@@ -25,10 +25,18 @@ char *read_input(char **input, size_t *len)
 	return (*input);
 }
 
+/**
+ * process_input - processes a line of input from the user
+ * @input: a pointer to a buffer containing the input
+ *
+ * Return: void
+ */
+
 void process_input(char *input)
 {
 	if (strcmp(input, "exit\n") == 0)
 	{
+		free(input);
 		exit(EXIT_SUCCESS);
 	}
 
@@ -45,6 +53,12 @@ void process_input(char *input)
 }
 
 
+/**
+ * print_env - prints the environment variables
+ *
+ * Return: void
+ */
+
 void print_env(void)
 {
 	char **env;
@@ -54,6 +68,15 @@ void print_env(void)
 		printf("%s\n", *env);
 	}
 }
+
+/**
+ * interactive - Runs a simple interactive shell
+ *
+ * This function reads lines of input from the user in an infinite loop,
+ * processes the input, and performs the appropriate action.
+ *
+ * Return: Always returns 0
+ */
 
 int interactive(void)
 {
