@@ -7,13 +7,13 @@
  */
 int execute_command(void)
 {
-	char *argv[] = {"/bin/ls", "-l", "/usr/", NULL};
+	char *argv[] = {"/bin/ls", "-l", NULL};
+   int val = execv(argv[0], argv);
+
+   if (val == -1)
+         perror("Error");
 
 	printf("Before execve\n");
-	if (execve(argv[0], argv, NULL) == -1)
-	{
-		perror("Error:");
-	}
-	printf("After execve\n");
+
 	return (0);
 }

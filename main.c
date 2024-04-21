@@ -1,7 +1,5 @@
 #include "main.h"
 
-
-
 /**
  * #define MAX_LINE_LENGTH 80
  * #define MAX_ARGS 1
