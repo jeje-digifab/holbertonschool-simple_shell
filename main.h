@@ -9,6 +9,7 @@
 #include <sys/stat.h>
 #include <string.h>
 #include <signal.h>
+#include <errno.h>
 
 #define MAX_LINE_LENGTH 1024
 #define MAX_TOKENS 64
@@ -20,7 +21,6 @@
 
 extern char **environ;
 
-
 /**
  * struct node - A structure to represent a node in a linked list of
  *               directories
@@ -30,31 +30,32 @@ extern char **environ;
 struct node
 {
 	char *dir;
-	/*char node *next;*/
 	struct node *next;
 };
 
 /*main.c*/
-int main(void);
+int main(int argc, char **argv);
+void hsh_export(char **args);
+struct node *create_path_list(char *path);
+void read_commands_from_file(char *filename);
 
 /*interactive.c*/
+int interactive(void);
 char *read_input(char **input, size_t *len);
 void process_input(char *input);
 void print_env(void);
-int interactive(void);
+void sigint_handler(int signum);
 
 /*non_interactive.c*/
-int non_interactive(void);
-int parse_input(char *input);
-struct node *create_path_list(char *path);
-void sigint_handler(int signum);
+void non_interactive(char *filename);
+void parse_input(char *input, char **args);
+void execute_command(char **args);
 
 /*fork.c*/
 int create_fork(char **args);
 int my_wait(int *status);
-int my_execvp(void);
-char *get_file_path(void);
-
-
+int my_execvp(char **args);
+void shell_loop(void);
+void free_args(char **args);
 
 #endif
