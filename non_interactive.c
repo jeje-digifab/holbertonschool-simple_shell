@@ -1,103 +1,97 @@
 #include "main.h"
 
 /**
- * non_interactive - runs the shell in non-interactive mode
- * @filename: the name of the file containing commands to execute
+ * non_interactive - reads input from stdin and processes it in non-interactive
+ *                   mode
  *
- * This function reads commands from the specified file and executes them
- * in a child process. It continues reading and executing commands until
- * it reaches the end of the file.
+ * Return: 0 on success, -1 on error
  */
-void non_interactive(char *filename)
-{
-	size_t n = 0;
-	ssize_t len;
-	char **args = malloc(MAX_ARGS * sizeof(char *));
-	char *line = NULL;
-	FILE *fp;
 
-	if (filename == NULL)
+int non_interactive(void)
+{
+	char buffer[MAX_LINE_LENGTH];
+
+	while (fgets(buffer, MAX_LINE_LENGTH, stdin) != NULL)
 	{
-		fp = stdin;
-	}
-	else
-	{
-		fp = fopen(filename, "r");
-		if (!fp)
+		if (strlen(buffer) == 0)
 		{
-			perror("fopen");
-			exit(EXIT_FAILURE);
+			continue;
+		}
+
+		if (parse_input(buffer) == -1)
+		{
+			perror("Error:");
+			return (-1);
 		}
 	}
 
-	while ((len = getline(&line, &n, fp)) != -1)
-	{
-		parse_input(line, args);
-		execute_command(args);
-	}
-
-	if (filename != NULL)
-	{
-		fclose(fp);
-	}
+	return (0);
 }
 
 
 /**
- * parse_input - parses a line of input into an array of arguments
- * @line: a pointer to a buffer containing the input
- * @args: a pointer to an array of arguments
+ * parse_input - parses the input string into an array of arguments
  *
- * This function uses strtok() to split the input string into an array of
- * arguments, using whitespace as the delimiter. It stores the arguments
- * in the array pointed to by args, and sets the last element of the array
- * to NULL.
+ * @input: the input string to be parsed
+ *
+ * Return: 0 on success, -1 on error
  */
-void parse_input(char *line, char **args)
-{
-	char *token;
-	int i = 0;
 
-	token = strtok(line, DELIMITER);
-	while (token != NULL)
-	{
-		args[i] = token;
-		i++;
-		token = strtok(NULL, DELIMITER);
-	}
-	args[i] = NULL;
+int parse_input(char *input) {
+    char *args[MAX_ARGS];
+    char *token;
+    int i = 0;
+
+    token = strtok(input, " \t\n");
+    while (token != NULL && i < MAX_ARGS - 1) {
+        args[i] = token;
+        token = strtok(NULL, " \t\n");
+        i++;
+    }
+    args[i] = NULL;
+
+    if (args[0] != NULL) {
+        if (access(args[0], F_OK) == 0) { /* Check if command exists*/
+            return create_fork(args); /* Call create_fork only if the command exists */
+        } else {
+            printf("Command not found: %s\n", args[0]); /* Print error message */
+            return -1;
+        }
+    }
+
+    return 0;
 }
 
 /**
- * execute_command - executes a command in a child process
- * @args: an array of arguments for the command
+ * create_path_list - creates a linked list of directories from the PATH
+ *                    environment variable
  *
- * This function creates a child process using fork() and executes the
- * specified command in the child process using execvp(). It waits for
- * the child process to terminate and then returns control to the parent
- * process.
+ * @path: the PATH environment variable string
+ *
+ * Return: a pointer to the head of the linked list
  */
-void execute_command(char **args)
-{
-	pid_t pid;
-	int status;
+struct node *create_path_list(char *path) {
+    struct node *head = NULL;
+    struct node *tail = NULL;
 
-	pid = fork();
+    char *dir = strtok(path, ":");
 
-	if (pid == 0)
-	{
-		if (execvp(args[0], args) == -1)
-		{
-			perror("execvp");
-			exit(EXIT_FAILURE);
-		}
-	}
-	else if (pid < 0)
-	{
-		perror("fork");
-	}
-	else
-	{
-		wait(&status);
-	}
+    while (dir != NULL) {
+        struct node *new_node = (struct node *) malloc(sizeof(struct node));
+
+        new_node->dir = strdup(dir);
+        new_node->next = NULL;
+
+        if (head == NULL) {
+            head = new_node;
+            tail = new_node;
+        } else {
+            tail->next = new_node;
+            tail = new_node;
+        }
+
+        dir = strtok(NULL, ":");
+    }
+
+    return head;
 }

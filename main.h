@@ -9,7 +9,7 @@
 #include <sys/stat.h>
 #include <string.h>
 #include <signal.h>
-#include <errno.h>
+#include <fcntl.h>
 
 #define MAX_LINE_LENGTH 1024
 #define MAX_TOKENS 64
@@ -29,33 +29,32 @@ extern char **environ;
  */
 struct node
 {
-	char *dir;
-	struct node *next;
+    char *dir;
+    struct node *next;
 };
 
 /*main.c*/
-int main(int argc, char **argv);
-void hsh_export(char **args);
-struct node *create_path_list(char *path);
-void read_commands_from_file(char *filename);
+int main(void);
 
 /*interactive.c*/
-int interactive(void);
 char *read_input(char **input, size_t *len);
 void process_input(char *input);
 void print_env(void);
-void sigint_handler(int signum);
+int interactive(void);
 
 /*non_interactive.c*/
-void non_interactive(char *filename);
-void parse_input(char *input, char **args);
-void execute_command(char **args);
+int non_interactive(void);
+int parse_input(char *input);
+struct node *create_path_list(char *path);
+void sigint_handler(int signum);
 
 /*fork.c*/
 int create_fork(char **args);
 int my_wait(int *status);
-int my_execvp(char **args);
-void shell_loop(void);
-void free_args(char **args);
+int my_execvp(void);
+char *get_file_path(void);
+char *_getpid(void);
+void *_realloc(void *ptr, unsigned int old_size, unsigned int new_size);
+char *strtokqe(char *str, char *delim, int escflags);
 
 #endif
