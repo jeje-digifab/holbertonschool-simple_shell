@@ -10,6 +10,7 @@
 #include <string.h>
 #include <signal.h>
 #include <fcntl.h>
+#include <stdarg.h> 
 
 #define MAX_LINE_LENGTH 1024
 #define MAX_TOKENS 64
@@ -34,13 +35,17 @@ struct node
 };
 
 /*main.c*/
-int main(void);
+void _isatty(void);
 
 /*interactive.c*/
 char *read_input(char **input, size_t *len);
 void process_input(char *input);
 void print_env(void);
-int interactive(void);
+void execute_command(const char *command);
+void exitt(char **arv);
+void freearv(char **arv);
+int process_sig(void);
+
 
 /*non_interactive.c*/
 int non_interactive(void);
@@ -54,7 +59,6 @@ int my_wait(int *status);
 int my_execvp(void);
 char *get_file_path(void);
 char *_getpid(void);
-void *_realloc(void *ptr, unsigned int old_size, unsigned int new_size);
-char *strtokqe(char *str, char *delim, int escflags);
+
 
 #endif

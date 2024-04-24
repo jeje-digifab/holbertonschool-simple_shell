@@ -1,120 +1,109 @@
-#include "main.h"
+#include "shell.h"
 
-/**
- * interactive - Runs a simple interactive shell
- *
- * This function reads lines of input from the user in an infinite loop,
- * processes the input, and performs the appropriate action.
- *
- * Return: Always returns 0
- */
+#define BUFFER_SIZE 1024
 
-int interactive(void)
-{
-	char *input = NULL;
-	size_t len = 0;
+extern char **environ;
 
-	signal(SIGINT, sigint_handler);
+char *read_input(char **input, size_t *len) {
+    int read;
 
-	while (1)
-	{
-		input =  read_input(&input, &len);
-		process_input(input);
-	}
-	free(input);
-	return (0);
-
+    printf("#cisfun$ ");
+    read = getline(input, len, stdin);
+    if (read == -1) {
+        if (feof(stdin)) {
+            printf("\n");
+            exit(EXIT_SUCCESS);
+        }
+        perror("getline");
+        exit(EXIT_FAILURE);
+    }
+    return (*input);
 }
 
-/**
- * read_input - reads a line of input from stdin and stores it in a buffer
- * @input: a double pointer to a buffer to store the input
- * @len: a pointer to a size_t variable containing the size of the buffer
- *
- * Return: a pointer to the buffer containing the input
- */
-
-char *read_input(char **input, size_t *len)
+void process_input(char *input) 
 {
-	ssize_t read;
+    int i = 0;
+    char *args[10]; 
 
+    char *token = strtok(input, " ");
 
-	printf("$ ");
-	read = getline(input, len, stdin);
-	if (read == -1)
-	{
-		perror("getline");
-		exit(EXIT_FAILURE);
-	}
-	return (*input);
+    if (strcmp(input, "exit\n") == 0) {
+        free(input);
+        exit(EXIT_SUCCESS);
+    } else if (strcmp(input, "\n") == 0) {
+      
+    } else {
+        input[strcspn(input, "\n")] = '\0'; 
+        
+        while (token != NULL && i < 9) {
+            args[i++] = token;
+            token = strtok(NULL, " ");
+        }
+        args[i] = NULL;
+
+        if (strcmp(args[0], "exit") == 0) {
+            exitt(args);
+        } else {
+            execute_command(input);
+        }
+    }
 }
 
-/**
- * process_input - processes a line of input from the user
- * @input: a pointer to a buffer containing the input
- *
- * Return: void
- */
-
-void process_input(char *input)
-{
-	if (strcmp(input, "exit\n") == 0)
-	{
-		free(input);
-		exit(EXIT_SUCCESS);
-	}
-
-	else if (strcmp(input, "env\n") == 0)
-	{
-		print_env();
-	}
-
-	else if (strcmp(input, "\n") != 0)
-	{
-		input[strcspn(input, "\n")] = '\0';
-		printf("%s: No such file or directory\n", input);
-	}
+void print_env(void) {
+    char **env;
+    for (env = environ; *env != NULL; env++) {
+        printf("%s\n", *env);
+    }
 }
 
-
-/**
- * print_env - prints the environment variables
- *
- * Return: void
- */
-
-void print_env(void)
-{
-	char **env;
-
-	for (env =  environ; *env != NULL; env++)
-	{
-		printf("%s\n", *env);
-	}
+void sigint_handler(int signum) {
+    (void) signum;
+    printf("\n#cisfun$ ");
+    fflush(stdout);
 }
 
-/**
- * sigint_handler - Handles the SIGINT signal
- * @signum: The signal number (unused in this function)
- *
- * Description: This function is called when the SIGINT signal is received.
- *		It prints a newline character and resets the signal handler to
- *		its default behavior.
- */
+int custom_execlp(const char *file, const char *arg0, ...) {
+    int i = 1;
+    va_list args;
+    const char *argv[10];
 
-void sigint_handler(int signum)
+    argv[0] = arg0;
+    va_start(args, arg0);
+
+    while ((argv[i] = va_arg(args, const char *)) != NULL && i < 9) {
+        i++;
+    }
+    va_end(args);
+    argv[i] = NULL;
+
+    execvp(file, (char *const *)argv);
+
+    return -1;
+}
+
+void execute_command(const char *command) {
+    pid_t child_pid = fork();
+    if (child_pid == -1) {
+        perror("fork");
+        exit(EXIT_FAILURE);
+    } else if (child_pid == 0) {
+        custom_execlp(command, command, (char *)NULL);
+        perror("custom_execlp");
+        exit(EXIT_FAILURE);
+    } else {
+        wait(NULL);
+    }
+}
+
+int process_sig(void) 
 {
-	static int sigint_received;
-	(void) signum;
+    char *input = NULL;
+    size_t len = 0;
+    signal(SIGINT, sigint_handler);
+    while (1) {
+        input = read_input(&input, &len);
+        process_input(input);
+    }
 
-	if (!sigint_received)
-	{
-		sigint_received = 1;
-		signal(SIGINT, SIG_IGN);
-		printf("\n");
-		printf("$ ");
-		fflush(stdout);
-		signal(SIGINT, sigint_handler);
-		sigint_received = 0;
-	}
+    return 0;
 }

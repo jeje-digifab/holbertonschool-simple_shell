@@ -1,4 +1,4 @@
-#include "main.h"
+#include "shell.h"
 
 /**
  * non_interactive - reads input from stdin and processes it in non-interactive

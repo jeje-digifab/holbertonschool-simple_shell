@@ -1,21 +1,14 @@
-#include "main.h"
+#include "shell.h"
 
-/**
- * #define MAX_LINE_LENGTH 80
- * #define MAX_ARGS 1
- */
-
+#include "shell.h"
 
 int main(void)
 {
+    return process_sig();
+}
 
+void _isatty(void)
+{
 	if (isatty(STDIN_FILENO))
-	{
-		return (interactive());
-	}
-	else
-	{
-
-	}
-	return (0);
+		printf("#cisfun$ ");
 }

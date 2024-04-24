@@ -1,4 +1,4 @@
-#include "main.h"
+#include "shell.h"
 
 /**
  * create_fork - creates a new process using fork() and executes the command
