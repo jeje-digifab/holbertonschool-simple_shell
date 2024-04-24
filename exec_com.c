@@ -1,5 +1,6 @@
 #include "shell.h"
 
+#define MAX_ARGS 20
 
 /**
  * custom_execlp - Executes a file with given arguments
@@ -21,36 +22,38 @@
  */
 int custom_execlp(const char *file, const char *arg0, ...)
 {
-	int i = 1;
-	va_list args;
-	const char *argv[10];
-	char *full_path = realpath(file, NULL);
+    int i;
 
-	argv[0] = arg0;
-	va_start(args, arg0);
+    va_list args;
+    const char *argv[MAX_ARGS + 1];
+    char *full_path = realpath(file, NULL);
 
-	while ((argv[i] = va_arg(args, const char *)) != NULL && i < 9)
-	{
-		i++;
-	}
-	va_end(args);
-	argv[i] = NULL;
+    if (full_path == NULL)
+    {
+        perror("realpath");
+        return -1;
+    }
 
-	if (full_path == NULL)
-	{
-		perror("realpath");
-		return (-1);
-	}
+    argv[0] = arg0;
+    va_start(args, arg0);
 
-	if (execve(full_path, (char *const *)argv, NULL) == -1)
-	{
-		perror(argv[0]);
-		free(full_path);
-		return (-1);
-	}
+   
+    for (i = 1; i < MAX_ARGS && (argv[i] = va_arg(args, const char *)) != NULL; i++)
+    {
+        
+    }
+    va_end(args);
+    argv[i] = NULL;
 
-	free(full_path);
-	return (0);
+    if (execve(full_path, (char *const *)argv, NULL) == -1)
+    {
+        perror(argv[0]);
+        free(full_path);
+        return -1;
+    }
+
+    free(full_path);
+    return 0;
 }
 
 /**
@@ -71,43 +74,44 @@ int custom_execlp(const char *file, const char *arg0, ...)
  */
 void execute_command(const char *command)
 {
-	pid_t child_pid = fork();
+    pid_t child_pid = fork();
 
-	if (child_pid == -1)
-	{
-		perror("fork");
-		exit(EXIT_FAILURE);
-	}
+    if (child_pid == -1)
+    {
+        perror("fork");
+        exit(EXIT_FAILURE);
+    }
 
-	else if (child_pid == 0)
-	{
-		char *args[10];
-		char *token = strtok((char *)command, DELIMITER);
-		int i = 0;
+    else if (child_pid == 0)
+    {
+        char *args[MAX_ARGS + 1]; 
+        char *token = strtok((char *)command, " ");
+        int i = 0;
 
-		while (token != NULL && i < 10)
-		{
-			args[i++] = token;
-			token = strtok(NULL, DELIMITER);
-		}
-		args[i] = NULL;
-		if (i == 0)
-		{
-			display_prompt();
-			exit(EXIT_SUCCESS);
-		}
-		if (strcmp(args[0], "exit") == 0)
-		{
-			exit(EXIT_SUCCESS);
-		}
-		if (execvp(args[0], args) == -1)
-		{
-			perror(args[0]);
-			exit(EXIT_FAILURE);
-		}
-	}
-	else
-	{
-		wait(NULL);
-	}
+        while (token != NULL && i < MAX_ARGS)
+        {
+            args[i++] = token;
+            token = strtok(NULL, " ");
+        }
+        args[i] = NULL;
+
+        if (i == 0)
+        {
+            display_prompt();
+            exit(EXIT_SUCCESS);
+        }
+        if (strcmp(args[0], "exit") == 0)
+        {
+            exit(EXIT_SUCCESS);
+        }
+        if (execvp(args[0], args) == -1)
+        {
+            perror(args[0]);
+            exit(EXIT_FAILURE);
+        }
+    }
+    else
+    {
+        wait(NULL);
+    }
 }
