@@ -24,6 +24,7 @@ int custom_execlp(const char *file, const char *arg0, ...)
 	int i = 1;
 	va_list args;
 	const char *argv[10];
+	char *full_path = realpath(file, NULL);
 
 	argv[0] = arg0;
 	va_start(args, arg0);
@@ -35,11 +36,20 @@ int custom_execlp(const char *file, const char *arg0, ...)
 	va_end(args);
 	argv[i] = NULL;
 
-	if (execvp(file, (char *const *)argv) == -1 && errno == ENOENT)
+	if (full_path == NULL)
 	{
-		perror(argv[0]);
+		perror("realpath");
 		return (-1);
 	}
+
+	if (execve(full_path, (char *const *)argv, NULL) == -1)
+	{
+		perror(argv[0]);
+		free(full_path);
+		return (-1);
+	}
+
+	free(full_path);
 	return (0);
 }
 
