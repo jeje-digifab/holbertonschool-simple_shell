@@ -77,7 +77,7 @@ void execute(char **argv)
  * _realloc - Reallocates memory block
  * @ptr: previous pointer
  * @old_size: old size of previous pointer
- * @new_size: new size for our pointer
+ * @new_size: new size for our pointert
  * Return: New resized Pointer
  */
 

@@ -55,10 +55,63 @@ hsh main.c shell.c test_ls_2
 
 ## Files
 
-Description and links to different project files, such as the manual, scripts, and source code files.
+`shell.h`
+This header file contains function prototypes, macros, and necessary include statements for your custom shell program. It provides a central location for declaring functions and constants used across multiple source files.<br> 
 
-## Flowchart of the function _printf
-![Flowchart of the function Simple Shell](flowchart/Flowchart_interactif.jpg?raw=true)
+`shell.c`
+This source file contains the `main` function, which serves as the entry point for your custom shell program. It sets up the signal handler for SIGINT, enters an infinite loop to display the prompt, read commands, and execute them until the user enters the "exit" command.<br> 
+
+`user_input.c`
+This source file contains functions related to user input handling. The `user_input` function reads user input from stdin and stores it in the provided buffer. The `read_command` function reads a command from standard input and stores it in the given character array. The `sigint_handler` function handles the SIGINT signal, printing a newline character and resetting the signal handler to its default behavior.
+<br> 
+`display_prompt.c`
+This source file contains the `display_prompt` function, which prints the shell prompt to standard output. The prompt is represented by the dollar sign ($) followed by a space.<br> 
+
+`exec_com.c`
+This source file contains functions related to command execution. The `custom_execlp` function executes a file with given arguments using the `execve` system call. The `execute_command` function forks the current process and executes the command passed as a string, tokenizing it into arguments using spaces and tabs as delimiters. It handles the "exit" command, empty commands, and failure cases of the `execve` function.
+
+
+## Flowchart of the Simple Shell
+
+```mermaid
+
+graph TD
+A[Start] --> B[Set SIGINT handler]
+B --> C[Main loop]
+C --> D[Display prompt]
+D --> E[Read command]
+E --> F["Command is 'exit'?"]
+F -->|Yes| G[Break from loop]
+F -->|No| H[Execute command]
+H --> I[Flush stdin]
+I --> C
+G --> J[Return EXIT_SUCCESS]
+
+E --> K["Error or EOF while reading?"]
+K -->|Yes| L["End of file?"]
+L -->|Yes| M[Print newline and exit with EXIT_SUCCESS]
+L -->|No| N[Print error message and exit with EXIT_FAILURE]
+
+O[Receive SIGINT] --> P["SIGINT received before?"]
+P -->|Yes| Q[Ignore signal]
+P -->|No| R[Print newline and display prompt]
+R --> S[Reset SIGINT handler]
+S --> T[Set SIGINT handler]
+T --> C
+
+subgraph user_input
+E --> K
+end
+
+subgraph sigint_handler
+O --> P
+end
+
+subgraph read_command
+K --> L
+end
+
+```
 
 Shell Start: Initializing the environment.
 Displaying the Command Prompt: In interactive mode, the shell displays a prompt.
@@ -69,7 +122,6 @@ Managing Results: The shell handles results or errors.
 Return to Command Prompt or Shell Termination: In interactive mode, return to the command prompt, otherwise termination of the shell.
 
 ## Authors
-**Jérôme Romand, Néia Santos Nascimento, Sofiane Arfane.**
-<br>
+**Jérôme Romand, Néia Santos Nascimento, Sofiane Arfane.** <br> 
 
 **Made for the HOLBERTON SCHOOL - cohort THO-0224**
