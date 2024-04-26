@@ -59,7 +59,7 @@ Description and links to different project files, such as the manual, scripts, a
 
 ## Flowchart of the function _printf
 
-``` mermaid
+```mermaid
 
 graph TD
 A[Start] --> B[Set SIGINT handler]
@@ -86,15 +86,15 @@ S --> T[Set SIGINT handler]
 T --> C
 
 subgraph user_input
-    E --> K
+E --> K
 end
 
 subgraph sigint_handler
-    O --> P
+O --> P
 end
 
 subgraph read_command
-    K --> L
+K --> L
 end
 
 ```
